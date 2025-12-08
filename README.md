@@ -58,6 +58,8 @@ ai-rfp-system/
         form.css       # Form + input styles
         sections.css   # Sections, cards, list styles
 
+---
+
 ## 🧪 Running the Project Locally
 ```bash
 
@@ -213,6 +215,8 @@ Response
     ]
   }
 }
+
+---
 
 ## 📸 Screenshots
 
