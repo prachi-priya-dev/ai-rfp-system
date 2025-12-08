@@ -1,12 +1,25 @@
-function RfpList({ rfps, loading }) {
+function RfpList({ rfps, loading, searchTerm, onSearchChange }) {
   return (
     <section className="section section--plain">
       <h2 className="section-heading">Existing RFPs</h2>
 
+      <div className="rfp-search">
+        <input
+          type="text"
+          className="rfp-search-input"
+          placeholder="Search RFPs by title, description, budget, or deadline..."
+          value={searchTerm}
+          onChange={(e) => onSearchChange(e.target.value)}
+        />
+      </div>
+
       {loading ? (
         <p>Loading RFPs...</p>
       ) : rfps.length === 0 ? (
-        <p className="rfp-list-empty">No RFPs yet. Create one above.</p>
+        <p className="rfp-list-empty">
+          No RFPs match your search. Try clearing the search box or create a
+          new RFP above.
+        </p>
       ) : (
         <div className="rfp-list">
           {rfps.map((rfp) => (

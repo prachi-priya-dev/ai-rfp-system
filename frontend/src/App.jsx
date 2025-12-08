@@ -8,6 +8,9 @@ import RfpList from './components/RfpList';
 const BACKEND_URL = 'http://localhost:4000';
 
 function App() {
+  // Theme state: 'light' | 'dark'
+  const [theme, setTheme] = useState('dark');
+
   // Health check state
   const [health, setHealth] = useState(null);
 
@@ -29,9 +32,16 @@ function App() {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState('');
 
+  // Search/filter state
+  const [searchTerm, setSearchTerm] = useState('');
+
   useEffect(() => {
     fetchRfps();
   }, []);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  };
 
   const checkBackend = async () => {
     try {
@@ -160,10 +170,26 @@ function App() {
     }
   };
 
+  // Filter RFPs based on searchTerm
+  const filteredRfps = rfps.filter((rfp) => {
+    if (!searchTerm.trim()) return true;
+
+    const haystack = [
+      rfp.title,
+      rfp.description,
+      rfp.budget != null ? String(rfp.budget) : '',
+      rfp.deadline || '',
+    ]
+      .join(' ')
+      .toLowerCase();
+
+    return haystack.includes(searchTerm.toLowerCase());
+  });
+
   return (
-    <div className="app-root">
+    <div className={`app-root ${theme === 'dark' ? 'theme-dark' : 'theme-light'}`}>
       <div className="app-card">
-        <Header />
+        <Header theme={theme} onToggleTheme={toggleTheme} />
 
         <BackendHealth health={health} onCheck={checkBackend} />
 
@@ -191,7 +217,12 @@ function App() {
           onSubmit={handleCreateRfp}
         />
 
-        <RfpList rfps={rfps} loading={loadingRfps} />
+        <RfpList
+          rfps={filteredRfps}
+          loading={loadingRfps}
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+        />
       </div>
     </div>
   );
