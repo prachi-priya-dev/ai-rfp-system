@@ -1,0 +1,21 @@
+.btn {
+    margin-top: 0.5rem;
+    padding: 0.6rem 1.2rem;
+    border-radius: 999px;
+    border: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    background: #2563eb;
+    color: #ffffff;
+    transition: background 0.15s ease;
+}
+
+.btn:hover {
+    background: #1e4fc7;
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
