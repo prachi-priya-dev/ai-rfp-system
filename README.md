@@ -231,13 +231,13 @@ Content-Type: application/json
 ## 📸 Screenshots
 
 ### 🏠 Main Screen
-![Main Screen](https://raw.githubusercontent.com/prachi-priya-dev/ai-rfp-system/main/screenshots/home.png)
+![Main Screen](/screenshots/home.png)
 
 ### 🤖 AI Assist
-![AI Assist](https://raw.githubusercontent.com/prachi-priya-dev/ai-rfp-system/main/screenshots/ai-assist.png)
+![AI Assist](/screenshots/ai-assist.png)
 
 ### 📝 Create RFP
-![Create RFP](https://raw.githubusercontent.com/prachi-priya-dev/ai-rfp-system/main/screenshots/create-rfp.png)
+![Create RFP](/screenshots/create-rfp.png)
 
 ### 📂 RFP List
-![RFP List](https://raw.githubusercontent.com/prachi-priya-dev/ai-rfp-system/main/screenshots/rfp-list.png)
+![RFP List](/screenshots/rfp-list.png)
