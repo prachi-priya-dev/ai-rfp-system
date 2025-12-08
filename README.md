@@ -216,16 +216,14 @@ Response
 ## 📸 Screenshots
 
 ### 🏠 Main Screen
-![Homepage](./screenshots/home.png)
+![Homepage](screenshots/home.png)
 
 ### 🤖 AI Assist
-![AI Assist](./screenshots/ai-assist.png)
+![AI Assist](screenshots/ai-assist.png)
 
 ### 📝 Create RFP
-![Create RFP](./screenshots/create-rfp.png)
+![Create RFP](screenshots/create-rfp.png)
 
 ### 📂 RFP List
-![RFP List](./screenshots/rfp-list.png)
-
-
+![RFP List](screenshots/rfp-list.png)
 
