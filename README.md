@@ -216,14 +216,13 @@ Response
 ## 📸 Screenshots
 
 ### 🏠 Main Screen
-(https://github.com/prachi-priya-dev/ai-rfp-system/blob/main/screenshots/home.png?raw=true)
+![Main Screen](https://github.com/prachi-priya-dev/ai-rfp-system/blob/main/screenshots/home.png?raw=true)
 
 ### 🤖 AI Assist
-(https://github.com/prachi-priya-dev/ai-rfp-system/blob/main/screenshots/ai-assist.png?raw=true)
+![AI Assist](https://github.com/prachi-priya-dev/ai-rfp-system/blob/main/screenshots/ai-assist.png?raw=true)
 
 ### 📝 Create RFP
-(https://github.com/prachi-priya-dev/ai-rfp-system/blob/main/screenshots/create-rfp.png?raw=true)
+![Create RFP](https://github.com/prachi-priya-dev/ai-rfp-system/blob/main/screenshots/create-rfp.png?raw=true)
 
 ### 📂 RFP List
-(https://github.com/prachi-priya-dev/ai-rfp-system/blob/main/screenshots/rfp-list.png?raw=true)
-
+![RFP List](https://github.com/prachi-priya-dev/ai-rfp-system/blob/main/screenshots/rfp-list.png?raw=true)
