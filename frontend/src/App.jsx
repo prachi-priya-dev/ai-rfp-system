@@ -18,6 +18,12 @@ function App() {
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState('');
 
+  // ----- AI parsing state -----
+  const [aiText, setAiText] = useState('');
+  const [aiResult, setAiResult] = useState(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState('');
+
   // Load RFPs on first render
   useEffect(() => {
     fetchRfps();
@@ -95,6 +101,67 @@ function App() {
     }
   };
 
+  // ---- API call: AI parse RFP text ----
+  const handleParseWithAI = async () => {
+    setAiError('');
+    setAiResult(null);
+
+    if (!aiText.trim()) {
+      setAiError('Please paste some RFP text first.');
+      return;
+    }
+
+    try {
+      setAiLoading(true);
+      const res = await fetch(`${BACKEND_URL}/api/rfps/parse`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: aiText }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to parse RFP with AI');
+      }
+
+      setAiResult(data.structuredRfp);
+    } catch (err) {
+      console.error(err);
+      setAiError(err.message);
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  // ---- Use AI result to fill the create form ----
+  const applyAiResultToForm = () => {
+    if (!aiResult) return;
+
+    if (aiResult.title) setTitle(aiResult.title);
+    if (aiResult.summary) {
+      const requirementsText =
+        Array.isArray(aiResult.key_requirements) &&
+        aiResult.key_requirements.length > 0
+          ? '\n\nKey Requirements:\n- ' + aiResult.key_requirements.join('\n- ')
+          : '';
+      const deliverablesText =
+        Array.isArray(aiResult.deliverables) && aiResult.deliverables.length > 0
+          ? '\n\nDeliverables:\n- ' + aiResult.deliverables.join('\n- ')
+          : '';
+      setDescription(
+        `${aiResult.summary}${requirementsText}${deliverablesText}`,
+      );
+    }
+    if (aiResult.budget_amount != null) {
+      setBudget(String(aiResult.budget_amount));
+    }
+    if (aiResult.deadline) {
+      setDeadline(aiResult.deadline); // assume YYYY-MM-DD
+    }
+  };
+
+  // ---------- JSX ----------
   return (
     <div
       style={{
@@ -106,7 +173,7 @@ function App() {
     >
       <div
         style={{
-          maxWidth: '900px',
+          maxWidth: '1100px',
           margin: '0 auto',
           background: '#ffffff',
           borderRadius: '16px',
@@ -117,7 +184,8 @@ function App() {
         <header style={{ marginBottom: '2rem' }}>
           <h1 style={{ margin: 0 }}>AI-Powered RFP Management System</h1>
           <p style={{ marginTop: '0.5rem', color: '#555' }}>
-            Step 2: Create and manage RFPs (basic CRUD).
+            Step 3: Use OpenAI to parse unstructured RFP text into structured
+            data.
           </p>
         </header>
 
@@ -149,6 +217,93 @@ function App() {
             >
               {health}
             </pre>
+          )}
+        </section>
+
+        {/* AI Assist section */}
+        <section
+          style={{
+            marginBottom: '2rem',
+            padding: '1.5rem',
+            borderRadius: '12px',
+            border: '1px solid #e0e0e0',
+            background: '#f9fafb',
+          }}
+        >
+          <h2 style={{ marginTop: 0, fontSize: '1.2rem' }}>
+            AI Assist: Parse RFP Text
+          </h2>
+          <p style={{ fontSize: '0.9rem', color: '#555' }}>
+            Paste a long, unstructured RFP (for example, from an email or PDF),
+            and let the model convert it into structured fields.
+          </p>
+
+          {aiError && (
+            <div
+              style={{
+                marginBottom: '1rem',
+                padding: '0.75rem 1rem',
+                borderRadius: '8px',
+                background: '#fef2f2',
+                color: '#991b1b',
+                border: '1px solid #fecaca',
+                fontSize: '0.9rem',
+              }}
+            >
+              {aiError}
+            </div>
+          )}
+
+          <div style={formFieldStyle}>
+            <label style={labelStyle}>Unstructured RFP text</label>
+            <textarea
+              value={aiText}
+              onChange={(e) => setAiText(e.target.value)}
+              style={{
+                ...inputStyle,
+                minHeight: '150px',
+                resize: 'vertical',
+                fontFamily: 'inherit',
+              }}
+              placeholder="Paste a detailed RFP email or document text here..."
+            />
+          </div>
+
+          <button
+            type="button"
+            style={buttonStyle}
+            onClick={handleParseWithAI}
+            disabled={aiLoading}
+          >
+            {aiLoading ? 'Analyzing with AI...' : 'Generate Structured RFP'}
+          </button>
+
+          {aiResult && (
+            <div style={{ marginTop: '1.5rem' }}>
+              <h3 style={{ fontSize: '1rem', marginBottom: '0.5rem' }}>
+                AI Output (Structured JSON)
+              </h3>
+              <pre
+                style={{
+                  padding: '0.75rem',
+                  borderRadius: '8px',
+                  background: '#0f172a',
+                  color: '#e5e7eb',
+                  fontSize: '0.85rem',
+                  overflowX: 'auto',
+                }}
+              >
+                {JSON.stringify(aiResult, null, 2)}
+              </pre>
+
+              <button
+                type="button"
+                style={{ ...buttonStyle, marginTop: '0.75rem' }}
+                onClick={applyAiResultToForm}
+              >
+                Use this data in RFP form
+              </button>
+            </div>
           )}
         </section>
 
