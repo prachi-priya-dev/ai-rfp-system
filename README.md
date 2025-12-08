@@ -1,6 +1,6 @@
 # 🤖 AI-Powered RFP Management System
 
-A full-stack web application to **create, manage, and AI-parse RFPs (Request for Proposals)**.
+A full-stack web application to **create, manage, and AI-parse RFPs (**Request** for Proposals)**.
 
 - Frontend: **React + Vite**
 - Backend: **Node.js + Express**
@@ -33,30 +33,29 @@ A full-stack web application to **create, manage, and AI-parse RFPs (Request for
 ## 🧱 Project Structure
 
 ai-rfp-system/
-  backend/
-    index.js          # Express app entry point
-    rfpStore.js       # In-memory RFP storage + helpers
-    aiParser.js       # Mock AI parser (no external API)
-    routes/
-      rfpRoutes.js    # All /api/rfps* routes
-  frontend/
-    src/
-      App.jsx         # Main React app
-      main.jsx        # React entry
-      index.css       # Global base styles
-      components/
-        Header.jsx
-        BackendHealth.jsx
-        AiAssistSection.jsx
-        RfpForm.jsx
-        RfpList.jsx
-      styles/
-        variables.css  # CSS variables (colors, fonts, etc.)
-        layout.css     # Layout styles (app container, card)
-        buttons.css    # Button styles
-        form.css       # Form + input styles
-        sections.css   # Sections, cards, list styles
-
+├── backend/
+│   ├── index.js          # Express app entry point
+│   ├── rfpStore.js       # In-memory RFP storage + helpers
+│   ├── aiParser.js       # Mock AI parser (no external API)
+│   └── routes/
+│       └── rfpRoutes.js    # All /api/rfps* routes
+└── frontend/
+    ├── src/
+    │   ├── App.jsx         # Main React app
+    │   ├── main.jsx        # React entry
+    │   ├── index.css       # Global base styles
+    │   └── components/
+    │       ├── Header.jsx
+    │       ├── BackendHealth.jsx
+    │       ├── AiAssistSection.jsx
+    │       ├── RfpForm.jsx
+    │       └── RfpList.jsx
+    └── styles/
+        ├── variables.css  # CSS variables (colors, fonts, etc.)
+        ├── layout.css     # Layout styles (app container, card)
+        ├── buttons.css    # Button styles
+        ├── form.css       # Form + input styles
+        └── sections.css   # Sections, cards, list styles
 ---
 
 ## 🧪 Running the Project Locally
@@ -103,10 +102,11 @@ http://localhost:4000/api
 
 Checks if backend server is running.
 
-Request
+**Request**
 GET /api/health
 
-Response
+**Response**
+
 {
   "status": "ok",
   "message": "Backend is running"
@@ -116,10 +116,10 @@ Response
 
 Returns all stored RFPs.
 
-Request
+**Request**
 GET /api/rfps
 
-Example Response
+**Response**
 [
   {
     "id": 1,
@@ -135,7 +135,7 @@ Example Response
 
 Creates a new RFP entry.
 
-Request
+**Request**
 POST /api/rfps
 Content-Type: application/json
 
@@ -146,7 +146,7 @@ Content-Type: application/json
   "deadline": "2026-02-01"
 }
 
-Response
+**Response**
 {
   "id": 2,
   "title": "New App Development",
@@ -160,10 +160,10 @@ Response
 
 Returns one RFP.
 
-Request
+**Request**
 GET /api/rfps/1
 
-Response
+**Response**
 {
   "id": 1,
   "title": "Website Redesign",
@@ -182,7 +182,7 @@ If not found:
 
 Parses unstructured RFP text into structured JSON using a local mock AI.
 
-Request
+**Request**
 POST /api/rfps/parse
 Content-Type: application/json
 
@@ -190,7 +190,7 @@ Content-Type: application/json
   "text": "We need a website and mobile app with product catalog..."
 }
 
-Response
+**Response**
 {
   "structuredRfp": {
     "title": "Website + Mobile App Development",
