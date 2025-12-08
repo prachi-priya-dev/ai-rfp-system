@@ -58,15 +58,16 @@ ai-rfp-system/
         form.css       # Form + input styles
         sections.css   # Sections, cards, list styles
 
-🧪 Running the Project Locally
+## 🧪 Running the Project Locally
+```bash
 
-1️⃣ Start the backend
+### 1️⃣ Start backend
 
 cd backend
 npm install      # only first time
 npm run dev      # starts server on http://localhost:4000
 
-2️⃣ Start the frontend
+### 2️⃣ Start the frontend
 
 Open a second terminal:
 
@@ -216,13 +217,13 @@ Response
 ## 📸 Screenshots
 
 ### 🏠 Main Screen
-![Main Screen](https://github.com/prachi-priya-dev/ai-rfp-system/blob/main/screenshots/home.png?raw=true)
+![Main Screen](https://raw.githubusercontent.com/prachi-priya-dev/ai-rfp-system/main/screenshots/home.png)
 
 ### 🤖 AI Assist
-![AI Assist](https://github.com/prachi-priya-dev/ai-rfp-system/blob/main/screenshots/ai-assist.png?raw=true)
+![AI Assist](https://raw.githubusercontent.com/prachi-priya-dev/ai-rfp-system/main/screenshots/ai-assist.png)
 
 ### 📝 Create RFP
-![Create RFP](https://github.com/prachi-priya-dev/ai-rfp-system/blob/main/screenshots/create-rfp.png?raw=true)
+![Create RFP](https://raw.githubusercontent.com/prachi-priya-dev/ai-rfp-system/main/screenshots/create-rfp.png)
 
 ### 📂 RFP List
-![RFP List](https://github.com/prachi-priya-dev/ai-rfp-system/blob/main/screenshots/rfp-list.png?raw=true)
+![RFP List](https://raw.githubusercontent.com/prachi-priya-dev/ai-rfp-system/main/screenshots/rfp-list.png)
