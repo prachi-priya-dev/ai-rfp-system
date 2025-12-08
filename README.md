@@ -32,7 +32,6 @@ A full-stack web application to **create, manage, and AI-parse RFPs (Request for
 
 ## 🧱 Project Structure
 
-```text
 ai-rfp-system/
   backend/
     index.js          # Express app entry point
@@ -61,7 +60,6 @@ ai-rfp-system/
 ---
 
 ## 🧪 Running the Project Locally
-```bash
 
 ### 1️⃣ Start backend
 
@@ -78,12 +76,12 @@ npm install      # only first time
 npm run dev      # starts app on http://localhost:5173
 
 
-Open browser:
+### Open browser:
 
 http://localhost:5173
 
 
-You should now see:
+### You should now see:
 
 Header
 
@@ -95,13 +93,13 @@ Create New RFP
 
 Existing RFP List
 
-📡 API Documentation
+## 📡 API Documentation
 
 Base URL (local):
 
 http://localhost:4000/api
 
-🩺 GET /api/health
+### 🩺 GET /api/health
 
 Checks if backend server is running.
 
@@ -114,7 +112,7 @@ Response
   "message": "Backend is running"
 }
 
-📂 GET /api/rfps
+### 📂 GET /api/rfps
 
 Returns all stored RFPs.
 
@@ -133,7 +131,7 @@ Example Response
   }
 ]
 
-📝 POST /api/rfps
+### 📝 POST /api/rfps
 
 Creates a new RFP entry.
 
@@ -158,7 +156,7 @@ Response
   "createdAt": "2025-12-08T10:25:11.123Z"
 }
 
-📄 GET /api/rfps/:id
+### 📄 GET /api/rfps/:id
 
 Returns one RFP.
 
@@ -180,7 +178,7 @@ If not found:
 
 { "error": "RFP not found" }
 
-🤖 POST /api/rfps/parse
+### 🤖 POST /api/rfps/parse
 
 Parses unstructured RFP text into structured JSON using a local mock AI.
 
