@@ -14,6 +14,10 @@ A full-stack web application to **create, manage, and AI-parse RFPs (**Request**
 
 ---
 
+**Test Note:** Confirming Git user name change.
+
+---
+
 ## 📌 Features
 
 - ✍️ **Create RFPs** with title, description, budget, deadline.
