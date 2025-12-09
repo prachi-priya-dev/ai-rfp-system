@@ -7,6 +7,12 @@ A full-stack web application to **create, manage, and AI-parse RFPs (**Request**
 - AI: **Mock AI parser (no paid API key needed)**
 
 ---
+## 🔗 Live Demo
+
+ - **Frontend:**  https://ai-rfp-frontend-system.netlify.app/
+ - **Backend Health:**  https://ai-rfp-backend-xn45.onrender.com/api/health
+
+---
 
 ## 📌 Features
 
