@@ -1,14 +1,12 @@
-// backend/routes/rfpRoutes.js
-
 const express = require('express');
 const { createRfp, getAllRfps, getRfpById } = require('../rfpStore');
 const { parseRfpWithAI } = require('../aiParser');
 
 const router = express.Router();
 
-// POST /api/rfps - create new RFP
+// Create a new RFP
 router.post('/rfps', (req, res) => {
-  const { title, description, budget, deadline } = req.body;
+  const { title, description, budget, deadline, budgetCurrency } = req.body;
 
   if (!title || !description) {
     return res
@@ -16,17 +14,24 @@ router.post('/rfps', (req, res) => {
       .json({ error: 'Title and description are required' });
   }
 
-  const newRfp = createRfp({ title, description, budget, deadline });
-  return res.status(201).json(newRfp);
+  const newRfp = createRfp({
+    title,
+    description,
+    budget: budget ?? null,
+    budgetCurrency: budgetCurrency || null,
+    deadline: deadline ?? null,
+  });
+
+  res.status(201).json(newRfp);
 });
 
-// GET /api/rfps - list all
+// Get all RFPs
 router.get('/rfps', (req, res) => {
   const rfps = getAllRfps();
-  return res.json(rfps);
+  res.json(rfps);
 });
 
-// GET /api/rfps/:id - one RFP
+// Get single RFP by id
 router.get('/rfps/:id', (req, res) => {
   const id = Number(req.params.id);
   const rfp = getRfpById(id);
@@ -35,10 +40,10 @@ router.get('/rfps/:id', (req, res) => {
     return res.status(404).json({ error: 'RFP not found' });
   }
 
-  return res.json(rfp);
+  res.json(rfp);
 });
 
-// POST /api/rfps/parse - AI / mock AI parsing
+// AI parse route stays same...
 router.post('/rfps/parse', async (req, res) => {
   const { text } = req.body;
 

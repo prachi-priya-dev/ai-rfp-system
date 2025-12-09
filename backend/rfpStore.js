@@ -1,27 +1,40 @@
-// backend/rfpStore.js
+const db = require('./db');
 
-let rfps = [];
-let nextRfpId = 1;
+// Create a new RFP and return the created row
+function createRfp({ title, description, budget, deadline, budgetCurrency }) {
+  const stmt = db.prepare(`
+    INSERT INTO rfps (title, description, budget, budgetCurrency, deadline)
+    VALUES (?, ?, ?, ?, ?)
+  `);
 
-function createRfp({ title, description, budget, deadline }) {
-  const newRfp = {
-    id: nextRfpId++,
+  const info = stmt.run(
     title,
     description,
-    budget: budget ?? null,
-    deadline: deadline ?? null,
-    createdAt: new Date().toISOString(),
-  };
-  rfps.push(newRfp);
-  return newRfp;
+    budget ?? null,
+    budgetCurrency || null,
+    deadline ?? null
+  );
+
+  // Fetch the inserted row
+  const row = db
+    .prepare('SELECT * FROM rfps WHERE id = ?')
+    .get(info.lastInsertRowid);
+
+  return row;
 }
 
+// Get all RFPs (newest first)
 function getAllRfps() {
-  return rfps;
+  const rows = db
+    .prepare('SELECT * FROM rfps ORDER BY datetime(createdAt) DESC')
+    .all();
+  return rows;
 }
 
+// Get a single RFP by id
 function getRfpById(id) {
-  return rfps.find((rfp) => rfp.id === id);
+  const row = db.prepare('SELECT * FROM rfps WHERE id = ?').get(id);
+  return row || null;
 }
 
 module.exports = {

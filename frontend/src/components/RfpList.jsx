@@ -1,29 +1,61 @@
+function formatBudget(budget, currency) {
+  if (budget == null) return '—';
+
+  const symbolMap = {
+    INR: '₹',
+    USD: '$',
+    EUR: '€',
+    GBP: '£',
+    JPY: '¥',
+    CAD: 'C$',
+    AUD: 'A$',
+  };
+
+  const symbol = symbolMap[currency] || '';
+  const formattedNumber = Number(budget).toLocaleString('en-IN');
+
+  if (symbol && currency) {
+    return `${symbol}${formattedNumber} ${currency}`;
+  }
+  if (currency) {
+    return `${formattedNumber} ${currency}`;
+  }
+  return formattedNumber;
+}
+
+function formatDateTime(isoString) {
+  if (!isoString) return '—';
+  const d = new Date(isoString);
+  return d.toLocaleString('en-GB'); // DD/MM/YYYY, HH:MM:SS
+}
+
 function RfpList({ rfps, loading, searchTerm, onSearchChange }) {
   return (
-    <section className="section section--plain">
+    <section className="section">
       <h2 className="section-heading">Existing RFPs</h2>
+      <p className="section-subtext">
+        Browse RFPs you&apos;ve created. Use search to filter by title,
+        description, budget, currency, or deadline.
+      </p>
 
       <div className="rfp-search">
         <input
           type="text"
           className="rfp-search-input"
-          placeholder="Search RFPs by title, description, budget, or deadline..."
+          placeholder="Search RFPs by title, description, budget or deadline..."
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
         />
       </div>
 
       {loading ? (
-        <p>Loading RFPs...</p>
+        <div>Loading RFPs...</div>
       ) : rfps.length === 0 ? (
-        <p className="rfp-list-empty">
-          No RFPs match your search. Try clearing the search box or create a
-          new RFP above.
-        </p>
+        <div className="rfp-list-empty">No RFPs yet. Create your first one above.</div>
       ) : (
         <div className="rfp-list">
           {rfps.map((rfp) => (
-            <div key={rfp.id} className="rfp-card">
+            <article key={rfp.id} className="rfp-card">
               <div className="rfp-card-header">
                 <div>
                   <h3 className="rfp-card-title">{rfp.title}</h3>
@@ -32,7 +64,8 @@ function RfpList({ rfps, loading, searchTerm, onSearchChange }) {
                 <div className="rfp-card-meta">
                   {rfp.budget != null && (
                     <div>
-                      <strong>Budget:</strong> ₹{rfp.budget}
+                      <strong>Budget:</strong>{' '}
+                      {formatBudget(rfp.budget, rfp.budgetCurrency)}
                     </div>
                   )}
                   {rfp.deadline && (
@@ -41,14 +74,11 @@ function RfpList({ rfps, loading, searchTerm, onSearchChange }) {
                     </div>
                   )}
                   <div className="rfp-card-meta-muted">
-                    Created:{' '}
-                    {rfp.createdAt
-                      ? new Date(rfp.createdAt).toLocaleString()
-                      : 'N/A'}
+                    Created: {formatDateTime(rfp.createdAt)}
                   </div>
                 </div>
               </div>
-            </div>
+            </article>
           ))}
         </div>
       )}

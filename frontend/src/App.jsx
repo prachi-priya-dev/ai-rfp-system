@@ -8,33 +8,27 @@ import RfpList from './components/RfpList';
 const BACKEND_URL =
   import.meta.env.VITE_API_URL || 'http://localhost:4000';
 
-
 function App() {
-  // Theme state: 'light' | 'dark'
   const [theme, setTheme] = useState('dark');
 
-  // Health check state
   const [health, setHealth] = useState(null);
 
-  // RFP form state
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [budget, setBudget] = useState('');
+  const [budgetCurrency, setBudgetCurrency] = useState('INR');
   const [deadline, setDeadline] = useState('');
 
-  // RFP list state
   const [rfps, setRfps] = useState([]);
   const [loadingRfps, setLoadingRfps] = useState(false);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState('');
 
-  // AI parsing state
   const [aiText, setAiText] = useState('');
   const [aiResult, setAiResult] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState('');
 
-  // Search/filter state
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
@@ -88,6 +82,7 @@ function App() {
           description,
           budget: budget ? Number(budget) : null,
           deadline: deadline || null,
+          budgetCurrency: budgetCurrency || null,
         }),
       });
 
@@ -102,6 +97,7 @@ function App() {
       setTitle('');
       setDescription('');
       setBudget('');
+      setBudgetCurrency('INR');
       setDeadline('');
     } catch (err) {
       console.error(err);
@@ -147,6 +143,7 @@ function App() {
     if (!aiResult) return;
 
     if (aiResult.title) setTitle(aiResult.title);
+
     if (aiResult.summary) {
       const requirementsText =
         Array.isArray(aiResult.key_requirements) &&
@@ -164,15 +161,20 @@ function App() {
         `${aiResult.summary}${requirementsText}${deliverablesText}`,
       );
     }
+
     if (aiResult.budget_amount != null) {
       setBudget(String(aiResult.budget_amount));
     }
+
+    if (aiResult.budget_currency) {
+      setBudgetCurrency(aiResult.budget_currency);
+    }
+
     if (aiResult.deadline) {
       setDeadline(aiResult.deadline);
     }
   };
 
-  // Filter RFPs based on searchTerm
   const filteredRfps = rfps.filter((rfp) => {
     if (!searchTerm.trim()) return true;
 
@@ -181,6 +183,7 @@ function App() {
       rfp.description,
       rfp.budget != null ? String(rfp.budget) : '',
       rfp.deadline || '',
+      rfp.budgetCurrency || '',
     ]
       .join(' ')
       .toLowerCase();
@@ -209,12 +212,14 @@ function App() {
           title={title}
           description={description}
           budget={budget}
+          budgetCurrency={budgetCurrency}
           deadline={deadline}
           error={error}
           creating={creating}
           onTitleChange={setTitle}
           onDescriptionChange={setDescription}
           onBudgetChange={setBudget}
+          onBudgetCurrencyChange={setBudgetCurrency}
           onDeadlineChange={setDeadline}
           onSubmit={handleCreateRfp}
         />
