@@ -5,7 +5,9 @@ import AiAssistSection from './components/AiAssistSection';
 import RfpForm from './components/RfpForm';
 import RfpList from './components/RfpList';
 
-const BACKEND_URL = 'http://localhost:4000';
+const BACKEND_URL =
+  import.meta.env.VITE_API_URL || 'http://localhost:4000';
+
 
 function App() {
   // Theme state: 'light' | 'dark'
