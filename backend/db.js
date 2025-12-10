@@ -1,16 +1,13 @@
+// backend/db.js
 const path = require('path');
 const Database = require('better-sqlite3');
 
-// The database file will be created in the backend folder
 const dbPath = path.join(__dirname, 'rfp.db');
-
-// Open (or create) the SQLite database
 const db = new Database(dbPath);
 
-// Some recommended SQLite settings
 db.pragma('journal_mode = WAL');
 
-// Create the RFPs table if it doesn't exist
+// RFPs table
 db.exec(`
   CREATE TABLE IF NOT EXISTS rfps (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -23,5 +20,25 @@ db.exec(`
   );
 `);
 
+// Vendors table
+db.exec(`
+  CREATE TABLE IF NOT EXISTS vendors (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL,
+    company TEXT,
+    notes TEXT,
+    createdAt TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+`);
+
+// Mapping table: which vendors are linked to which RFP
+db.exec(`
+  CREATE TABLE IF NOT EXISTS rfp_vendors (
+    rfpId INTEGER NOT NULL,
+    vendorId INTEGER NOT NULL,
+    PRIMARY KEY (rfpId, vendorId)
+  );
+`);
 
 module.exports = db;

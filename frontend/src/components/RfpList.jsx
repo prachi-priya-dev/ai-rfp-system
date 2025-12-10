@@ -76,6 +76,12 @@ function RfpList({ rfps, loading, searchTerm, onSearchChange }) {
                   <div className="rfp-card-meta-muted">
                     Created: {formatDateTime(rfp.createdAt)}
                   </div>
+                  {rfp.vendorCount > 0 && (
+    <div className="rfp-card-meta-muted">
+      <strong>Vendors:</strong>{' '}
+      {rfp.vendorNames || `${rfp.vendorCount} selected`}
+    </div>
+  )}
                 </div>
               </div>
             </article>

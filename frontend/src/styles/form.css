@@ -45,3 +45,52 @@
     flex: 1;
     min-width: 150px;
 }
+
+.vendor-choices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.35rem;
+}
+
+.vendor-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.75rem;
+    border-radius: 999px;
+    border: 1px solid var(--border-subtle);
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+/* checkbox itself */
+.vendor-pill input {
+    margin: 0;
+}
+
+/* default text */
+.vendor-pill span {
+    font-size: 0.78rem;
+}
+
+/* LIGHT THEME */
+.theme-light .vendor-pill {
+    background: #f3f4f6;
+    border-color: #d1d5db;
+}
+
+.theme-light .vendor-pill span {
+    color: #111827;
+}
+
+/* DARK THEME */
+.theme-dark .vendor-pill {
+    background: #020617;
+    border-color: #4b5563;
+}
+
+.theme-dark .vendor-pill span {
+    color: #e5e7eb;
+    /* light text */
+}

@@ -4,6 +4,7 @@ import BackendHealth from './components/BackendHealth';
 import AiAssistSection from './components/AiAssistSection';
 import RfpForm from './components/RfpForm';
 import RfpList from './components/RfpList';
+import VendorSection from './components/VendorSection';
 
 const BACKEND_URL =
   import.meta.env.VITE_API_URL || 'http://localhost:4000';
@@ -31,8 +32,16 @@ function App() {
 
   const [searchTerm, setSearchTerm] = useState('');
 
+  // Vendors
+  const [vendors, setVendors] = useState([]);
+  const [loadingVendors, setLoadingVendors] = useState(false);
+  const [creatingVendor, setCreatingVendor] = useState(false);
+  const [vendorError, setVendorError] = useState('');
+  const [selectedVendorIds, setSelectedVendorIds] = useState([]);
+
   useEffect(() => {
     fetchRfps();
+    fetchVendors();
   }, []);
 
   const toggleTheme = () => {
@@ -63,6 +72,71 @@ function App() {
     }
   };
 
+  const fetchVendors = async () => {
+    try {
+      setLoadingVendors(true);
+      const res = await fetch(`${BACKEND_URL}/api/vendors`);
+      const data = await res.json();
+      setVendors(data);
+    } catch (err) {
+      console.error(err);
+      setVendorError('Failed to load vendors');
+    } finally {
+      setLoadingVendors(false);
+    }
+  };
+
+  const handleCreateVendor = async (vendorInput) => {
+    setVendorError('');
+    try {
+      setCreatingVendor(true);
+      const res = await fetch(`${BACKEND_URL}/api/vendors`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(vendorInput),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to create vendor');
+      }
+
+      setVendors((prev) => [data, ...prev]);
+    } catch (err) {
+      console.error(err);
+      setVendorError(err.message);
+    } finally {
+      setCreatingVendor(false);
+    }
+  };
+
+    const handleUpdateVendor = async (id, updates) => {
+    setVendorError('');
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/vendors/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to update vendor');
+      }
+
+      // Update in local state
+      setVendors((prev) =>
+        prev.map((v) => (v.id === id ? data : v)),
+      );
+    } catch (err) {
+      console.error(err);
+      setVendorError(err.message);
+    }
+  };
+
+
   const handleCreateRfp = async (e) => {
     e.preventDefault();
     setError('');
@@ -86,19 +160,33 @@ function App() {
         }),
       });
 
+      const data = await res.json();
+
       if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.error || 'Failed to create RFP');
+        throw new Error(data.error || 'Failed to create RFP');
       }
 
-      const created = await res.json();
-      setRfps((prev) => [created, ...prev]);
+      const created = data;
 
+      // If vendors selected, link them to this RFP
+      if (selectedVendorIds.length > 0) {
+        await fetch(`${BACKEND_URL}/api/rfps/${created.id}/vendors`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ vendorIds: selectedVendorIds }),
+        });
+      }
+
+      // Refresh list from backend (so vendorCount updates)
+      await fetchRfps();
+
+      // Clear form
       setTitle('');
       setDescription('');
       setBudget('');
       setBudgetCurrency('INR');
       setDeadline('');
+      setSelectedVendorIds([]);
     } catch (err) {
       console.error(err);
       setError(err.message);
@@ -184,6 +272,7 @@ function App() {
       rfp.budget != null ? String(rfp.budget) : '',
       rfp.deadline || '',
       rfp.budgetCurrency || '',
+      rfp.vendorCount != null ? String(rfp.vendorCount) : '',
     ]
       .join(' ')
       .toLowerCase();
@@ -191,12 +280,29 @@ function App() {
     return haystack.includes(searchTerm.toLowerCase());
   });
 
+  const handleToggleVendor = (vendorId) => {
+    setSelectedVendorIds((prev) =>
+      prev.includes(vendorId)
+        ? prev.filter((id) => id !== vendorId)
+        : [...prev, vendorId],
+    );
+  };
+
   return (
     <div className={`app-root ${theme === 'dark' ? 'theme-dark' : 'theme-light'}`}>
       <div className="app-card">
         <Header theme={theme} onToggleTheme={toggleTheme} />
 
         <BackendHealth health={health} onCheck={checkBackend} />
+
+        <VendorSection
+  vendors={vendors}
+  loading={loadingVendors}
+  error={vendorError}
+  creating={creatingVendor}
+  onCreateVendor={handleCreateVendor}
+  onUpdateVendor={handleUpdateVendor}
+/>
 
         <AiAssistSection
           aiText={aiText}
@@ -216,11 +322,14 @@ function App() {
           deadline={deadline}
           error={error}
           creating={creating}
+          vendors={vendors}
+          selectedVendorIds={selectedVendorIds}
           onTitleChange={setTitle}
           onDescriptionChange={setDescription}
           onBudgetChange={setBudget}
           onBudgetCurrencyChange={setBudgetCurrency}
           onDeadlineChange={setDeadline}
+          onToggleVendor={handleToggleVendor}
           onSubmit={handleCreateRfp}
         />
 

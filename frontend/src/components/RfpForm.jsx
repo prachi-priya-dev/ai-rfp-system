@@ -6,11 +6,14 @@ function RfpForm({
   deadline,
   error,
   creating,
+  vendors,
+  selectedVendorIds,
   onTitleChange,
   onDescriptionChange,
   onBudgetChange,
   onBudgetCurrencyChange,
   onDeadlineChange,
+  onToggleVendor,
   onSubmit,
 }) {
   return (
@@ -85,6 +88,26 @@ function RfpForm({
             onChange={(e) => onDeadlineChange(e.target.value)}
           />
         </div>
+
+        {vendors && vendors.length > 0 && (
+          <div className="form-group">
+            <label>Select Vendors (optional)</label>
+            <div className="vendor-choices">
+              {vendors.map((v) => (
+                <label key={v.id} className="vendor-pill">
+                  <input
+                    type="checkbox"
+                    checked={selectedVendorIds.includes(v.id)}
+                    onChange={() => onToggleVendor(v.id)}
+                  />
+                  <span>
+                    {v.name} ({v.email})
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
 
         <button type="submit" className="btn btn-primary" disabled={creating}>
           {creating ? 'Creating...' : 'Create RFP'}

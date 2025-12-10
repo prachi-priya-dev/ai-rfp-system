@@ -1,7 +1,8 @@
+// backend/rfpStore.js
 const db = require('./db');
 
 // Create a new RFP and return the created row
-function createRfp({ title, description, budget, deadline, budgetCurrency }) {
+function createRfp({ title, description, budget, budgetCurrency, deadline }) {
   const stmt = db.prepare(`
     INSERT INTO rfps (title, description, budget, budgetCurrency, deadline)
     VALUES (?, ?, ?, ?, ?)
@@ -15,7 +16,6 @@ function createRfp({ title, description, budget, deadline, budgetCurrency }) {
     deadline ?? null
   );
 
-  // Fetch the inserted row
   const row = db
     .prepare('SELECT * FROM rfps WHERE id = ?')
     .get(info.lastInsertRowid);
@@ -23,11 +23,24 @@ function createRfp({ title, description, budget, deadline, budgetCurrency }) {
   return row;
 }
 
-// Get all RFPs (newest first)
+// Get all RFPs (newest first) + how many vendors linked to each
 function getAllRfps() {
   const rows = db
-    .prepare('SELECT * FROM rfps ORDER BY datetime(createdAt) DESC')
+    .prepare(
+      `
+    SELECT
+      r.*,
+      COUNT(rv.vendorId) AS vendorCount,
+      GROUP_CONCAT(v.name, ', ') AS vendorNames
+    FROM rfps r
+    LEFT JOIN rfp_vendors rv ON rv.rfpId = r.id
+    LEFT JOIN vendors v ON v.id = rv.vendorId
+    GROUP BY r.id
+    ORDER BY datetime(r.createdAt) DESC
+  `,
+    )
     .all();
+
   return rows;
 }
 
