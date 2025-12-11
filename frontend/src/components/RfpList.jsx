@@ -29,7 +29,7 @@ function formatDateTime(isoString) {
   return d.toLocaleString('en-GB'); // DD/MM/YYYY, HH:MM:SS
 }
 
-function RfpList({ rfps, loading, searchTerm, onSearchChange }) {
+function RfpList({ rfps, loading, searchTerm, onSearchChange, onSendRfp }) {
   return (
     <section className="section">
       <h2 className="section-heading">Existing RFPs</h2>
@@ -82,6 +82,19 @@ function RfpList({ rfps, loading, searchTerm, onSearchChange }) {
       {rfp.vendorNames || `${rfp.vendorCount} selected`}
     </div>
   )}
+          <div className="rfp-card-footer">
+          <button
+            type="button"
+            className="btn btn-tertiary"
+            onClick={() => onSendRfp(rfp.id)}
+            disabled={rfp.vendorCount === 0}
+          >
+            {rfp.vendorCount === 0
+              ? 'No vendors linked'
+              : `Send to ${rfp.vendorCount} vendor(s)`}
+          </button>
+        </div>
+
                 </div>
               </div>
             </article>

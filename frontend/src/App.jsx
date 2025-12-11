@@ -227,6 +227,29 @@ function App() {
     }
   };
 
+    const handleSendRfp = async (rfpId) => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/rfps/${rfpId}/send`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}), // send to all linked vendors
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.error || 'Failed to send RFP emails');
+        return;
+      }
+
+      alert(data.message || 'RFP sent to vendors.');
+    } catch (err) {
+      console.error(err);
+      alert('Error sending RFP: ' + err.message);
+    }
+  };
+
+
   const applyAiResultToForm = () => {
     if (!aiResult) return;
 
@@ -338,6 +361,7 @@ function App() {
           loading={loadingRfps}
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
+          onSendRfp={handleSendRfp}
         />
       </div>
     </div>

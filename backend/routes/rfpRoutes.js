@@ -1,6 +1,9 @@
 const express = require('express');
 const { createRfp, getAllRfps, getRfpById } = require('../rfpStore');
 const { parseRfpWithAI } = require('../aiParser');
+const { getVendorsForRfp } = require('../vendorStore');
+const { sendRfpEmails } = require('../emailService');
+
 
 const router = express.Router();
 
@@ -65,5 +68,55 @@ router.post('/rfps/parse', async (req, res) => {
     });
   }
 });
+
+// POST /api/rfps/:id/send
+// Body (optional): { vendorIds: [1,2,3] } -> send only to these
+// If vendorIds missing -> send to all vendors linked to this RFP
+router.post('/rfps/:id/send', async (req, res) => {
+  const rfpId = Number(req.params.id);
+  const { vendorIds } = req.body || {};
+
+  if (!rfpId) {
+    return res.status(400).json({ error: 'Invalid RFP id' });
+  }
+
+  // 1. Load RFP
+  const rfp = getRfpById(rfpId);
+  if (!rfp) {
+    return res.status(404).json({ error: 'RFP not found' });
+  }
+
+  // 2. Load vendors for this RFP
+  let vendors = [];
+  if (Array.isArray(vendorIds) && vendorIds.length > 0) {
+    const allVendors = getVendorsForRfp(rfpId);
+    const set = new Set(vendorIds.map((id) => Number(id)));
+    vendors = allVendors.filter((v) => set.has(v.id));
+  } else {
+    vendors = getVendorsForRfp(rfpId);
+  }
+
+  if (!vendors || vendors.length === 0) {
+    return res
+      .status(400)
+      .json({ error: 'No vendors linked to this RFP' });
+  }
+
+  try {
+    const result = await sendRfpEmails(rfp, vendors);
+    res.json({
+      ok: true,
+      message: `Sent RFP to ${result.sent} vendor(s).`,
+      details: result,
+    });
+  } catch (err) {
+    console.error('Send RFP email error:', err);
+    res.status(500).json({
+      error: 'Failed to send RFP emails',
+      details: err.message,
+    });
+  }
+});
+
 
 module.exports = router;
