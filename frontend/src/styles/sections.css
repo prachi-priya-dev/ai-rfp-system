@@ -145,3 +145,24 @@
     margin-top: 0.25rem;
     color: var(--color-text-light);
 }
+
+/* Make proposal / RFP summaries clearly readable */
+.rfp-card-body {
+    margin-top: 0.75rem;
+    font-size: 0.9rem;
+    color: var(--color-text);
+    /* was text-muted */
+}
+
+.rfp-card-body p {
+    margin-top: 0.25rem;
+    color: inherit;
+    /* use the bright text color */
+}
+
+.rfp-card-body strong {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    color: var(--color-heading);
+}

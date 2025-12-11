@@ -1,8 +1,10 @@
 const express = require('express');
 const { createRfp, getAllRfps, getRfpById } = require('../rfpStore');
 const { parseRfpWithAI } = require('../aiParser');
-const { getVendorsForRfp } = require('../vendorStore');
+const { linkVendorsToRfp, getVendorsForRfp } = require('../vendorStore');
 const { sendRfpEmails } = require('../emailService');
+const { createProposal, getProposalsForRfp } = require('../proposalStore');
+const { parseProposalText } = require('../proposalParser');
 
 
 const router = express.Router();
@@ -117,6 +119,96 @@ router.post('/rfps/:id/send', async (req, res) => {
     });
   }
 });
+
+// GET /api/rfps/:id/vendors
+// POST /api/rfps/:id/vendors
+// Body: { vendorIds: [1, 2, 3] }
+router.post('/rfps/:id/vendors', (req, res) => {
+  const rfpId = Number(req.params.id);
+  const { vendorIds } = req.body || {};
+
+  if (!rfpId) {
+    return res.status(400).json({ error: 'Invalid RFP id' });
+  }
+  if (!Array.isArray(vendorIds) || vendorIds.length === 0) {
+    return res.status(400).json({ error: 'vendorIds array is required' });
+  }
+
+  try {
+    linkVendorsToRfp(rfpId, vendorIds);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('Link vendors to RFP error:', err);
+    res.status(500).json({
+      error: 'Failed to link vendors to RFP',
+      details: err.message,
+    });
+  }
+});
+
+// POST /api/rfps/:id/proposals
+// Body: { vendorName, vendorEmail, text }
+router.post('/rfps/:id/proposals', async (req, res) => {
+  const rfpId = Number(req.params.id);
+  const { vendorName, vendorEmail, text } = req.body || {};
+
+  if (!rfpId) {
+    return res.status(400).json({ error: 'Invalid RFP id' });
+  }
+  if (!text || !text.trim()) {
+    return res
+      .status(400)
+      .json({ error: 'Proposal text is required' });
+  }
+
+  const rfp = getRfpById(rfpId);
+  if (!rfp) {
+    return res.status(404).json({ error: 'RFP not found' });
+  }
+
+  try {
+    const parsed = await parseProposalText(text);
+
+    const proposal = createProposal({
+      rfpId,
+      vendorName: vendorName || null,
+      vendorEmail: vendorEmail || null,
+      rawText: text,
+      parsed,
+    });
+
+    res.status(201).json({
+      proposal,
+      parsed,
+    });
+  } catch (err) {
+    console.error('Create proposal error:', err);
+    res.status(500).json({
+      error: 'Failed to save proposal',
+      details: err.message,
+    });
+  }
+});
+
+// GET /api/rfps/:id/proposals
+router.get('/rfps/:id/proposals', (req, res) => {
+  const rfpId = Number(req.params.id);
+  if (!rfpId) {
+    return res.status(400).json({ error: 'Invalid RFP id' });
+  }
+
+  try {
+    const proposals = getProposalsForRfp(rfpId);
+    res.json(proposals);
+  } catch (err) {
+    console.error('Get proposals error:', err);
+    res.status(500).json({
+      error: 'Failed to load proposals',
+      details: err.message,
+    });
+  }
+});
+
 
 
 module.exports = router;

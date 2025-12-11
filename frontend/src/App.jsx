@@ -5,6 +5,7 @@ import AiAssistSection from './components/AiAssistSection';
 import RfpForm from './components/RfpForm';
 import RfpList from './components/RfpList';
 import VendorSection from './components/VendorSection';
+import VendorProposalsSection from './components/VendorProposalsSection';
 
 const BACKEND_URL =
   import.meta.env.VITE_API_URL || 'http://localhost:4000';
@@ -38,6 +39,21 @@ function App() {
   const [creatingVendor, setCreatingVendor] = useState(false);
   const [vendorError, setVendorError] = useState('');
   const [selectedVendorIds, setSelectedVendorIds] = useState([]);
+
+  // Proposals
+  const [selectedRfpIdForProposals, setSelectedRfpIdForProposals] =
+    useState('');
+  const [proposals, setProposals] = useState([]);
+  const [loadingProposals, setLoadingProposals] = useState(false);
+  const [creatingProposal, setCreatingProposal] = useState(false);
+  const [proposalError, setProposalError] = useState('');
+  const [proposalVendorName, setProposalVendorName] = useState('');
+  const [proposalVendorEmail, setProposalVendorEmail] = useState('');
+  const [proposalText, setProposalText] = useState('');
+    const [proposalVendors, setProposalVendors] = useState([]);
+  const [selectedProposalVendorId, setSelectedProposalVendorId] =
+    useState('');
+
 
   useEffect(() => {
     fetchRfps();
@@ -86,6 +102,26 @@ function App() {
     }
   };
 
+  const fetchProposalsForRfp = async (rfpId) => {
+    if (!rfpId) {
+      setProposals([]);
+      return;
+    }
+    try {
+      setLoadingProposals(true);
+      const res = await fetch(
+        `${BACKEND_URL}/api/rfps/${rfpId}/proposals`,
+      );
+      const data = await res.json();
+      setProposals(data);
+    } catch (err) {
+      console.error(err);
+      setProposalError('Failed to load proposals');
+    } finally {
+      setLoadingProposals(false);
+    }
+  };
+
   const handleCreateVendor = async (vendorInput) => {
     setVendorError('');
     try {
@@ -111,7 +147,7 @@ function App() {
     }
   };
 
-    const handleUpdateVendor = async (id, updates) => {
+  const handleUpdateVendor = async (id, updates) => {
     setVendorError('');
     try {
       const res = await fetch(`${BACKEND_URL}/api/vendors/${id}`, {
@@ -126,7 +162,6 @@ function App() {
         throw new Error(data.error || 'Failed to update vendor');
       }
 
-      // Update in local state
       setVendors((prev) =>
         prev.map((v) => (v.id === id ? data : v)),
       );
@@ -135,7 +170,6 @@ function App() {
       setVendorError(err.message);
     }
   };
-
 
   const handleCreateRfp = async (e) => {
     e.preventDefault();
@@ -227,29 +261,6 @@ function App() {
     }
   };
 
-    const handleSendRfp = async (rfpId) => {
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/rfps/${rfpId}/send`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}), // send to all linked vendors
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        alert(data.error || 'Failed to send RFP emails');
-        return;
-      }
-
-      alert(data.message || 'RFP sent to vendors.');
-    } catch (err) {
-      console.error(err);
-      alert('Error sending RFP: ' + err.message);
-    }
-  };
-
-
   const applyAiResultToForm = () => {
     if (!aiResult) return;
 
@@ -311,21 +322,141 @@ function App() {
     );
   };
 
+  const handleSendRfp = async (rfpId) => {
+    try {
+      const res = await fetch(
+        `${BACKEND_URL}/api/rfps/${rfpId}/send`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({}), // send to all linked vendors
+        },
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.error || 'Failed to send RFP emails');
+        return;
+      }
+
+      alert(data.message || 'RFP sent to vendors.');
+    } catch (err) {
+      console.error(err);
+      alert('Error sending RFP: ' + err.message);
+    }
+  };
+
+  const handleSelectRfpForProposals = (rfpId) => {
+    setSelectedRfpIdForProposals(rfpId);
+    setProposalError('');
+    setProposalVendorName('');
+    setProposalVendorEmail('');
+    setProposalText('');
+    if (rfpId) {
+      fetchProposalsForRfp(rfpId);
+      fetchVendorsForRfp(rfpId); 
+    } else {
+      setProposals([]);
+    }
+  };
+
+  const handleSubmitProposal = async (e) => {
+    e.preventDefault();
+    setProposalError('');
+
+    if (!selectedRfpIdForProposals) {
+      setProposalError('Please select an RFP first.');
+      return;
+    }
+    if (!proposalText.trim()) {
+      setProposalError('Proposal text is required.');
+      return;
+    }
+
+    try {
+      setCreatingProposal(true);
+
+      const res = await fetch(
+        `${BACKEND_URL}/api/rfps/${selectedRfpIdForProposals}/proposals`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            vendorName: proposalVendorName || null,
+            vendorEmail: proposalVendorEmail || null,
+            text: proposalText,
+          }),
+        },
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to save proposal');
+      }
+
+      // Prepend new proposal to list
+      setProposals((prev) => [data.proposal, ...prev]);
+
+      // Clear form
+      setProposalVendorName('');
+      setProposalVendorEmail('');
+      setProposalText('');
+    } catch (err) {
+      console.error(err);
+      setProposalError(err.message);
+    } finally {
+      setCreatingProposal(false);
+    }
+  };
+
+    const handleSelectVendorForProposal = (vendorId) => {
+    setSelectedProposalVendorId(vendorId || '');
+    if (!vendorId) {
+      // Clear fields if user chooses "no vendor"
+      setProposalVendorName('');
+      setProposalVendorEmail('');
+      return;
+    }
+
+    const v = proposalVendors.find((vv) => vv.id === vendorId);
+    if (v) {
+      setProposalVendorName(v.name || '');
+      setProposalVendorEmail(v.email || '');
+    }
+  };
+
+
+    const fetchVendorsForRfp = async (rfpId) => {
+    if (!rfpId) {
+      setProposalVendors([]);
+      return;
+    }
+    try {
+      const res = await fetch(
+        `${BACKEND_URL}/api/rfps/${rfpId}/vendors`,
+      );
+      const data = await res.json();
+      setProposalVendors(data);
+    } catch (err) {
+      console.error(err);
+      // silently ignore here; proposals can still work without vendor list
+    }
+  };
+
+
   return (
-    <div className={`app-root ${theme === 'dark' ? 'theme-dark' : 'theme-light'}`}>
+    <div
+      className={`app-root ${
+        theme === 'dark' ? 'theme-dark' : 'theme-light'
+      }`}
+    >
       <div className="app-card">
         <Header theme={theme} onToggleTheme={toggleTheme} />
 
         <BackendHealth health={health} onCheck={checkBackend} />
 
-        <VendorSection
-  vendors={vendors}
-  loading={loadingVendors}
-  error={vendorError}
-  creating={creatingVendor}
-  onCreateVendor={handleCreateVendor}
-  onUpdateVendor={handleUpdateVendor}
-/>
 
         <AiAssistSection
           aiText={aiText}
@@ -336,6 +467,15 @@ function App() {
           onParseClick={handleParseWithAI}
           onApplyAiResult={applyAiResultToForm}
         />
+
+        <VendorSection
+          vendors={vendors}
+          loading={loadingVendors}
+          error={vendorError}
+          creating={creatingVendor}
+          onCreateVendor={handleCreateVendor}
+          onUpdateVendor={handleUpdateVendor}
+/>
 
         <RfpForm
           title={title}
@@ -354,6 +494,26 @@ function App() {
           onDeadlineChange={setDeadline}
           onToggleVendor={handleToggleVendor}
           onSubmit={handleCreateRfp}
+        />
+
+        <VendorProposalsSection
+          rfps={rfps}
+          selectedRfpId={selectedRfpIdForProposals}
+          onSelectedRfpChange={handleSelectRfpForProposals}
+          vendorsForRfp={proposalVendors}                 // 👈 NEW
+          selectedVendorId={selectedProposalVendorId}     // 👈 NEW
+          onSelectedVendorChange={handleSelectVendorForProposal}
+          vendorName={proposalVendorName}
+          vendorEmail={proposalVendorEmail}
+          proposalText={proposalText}
+          onVendorNameChange={setProposalVendorName}
+          onVendorEmailChange={setProposalVendorEmail}
+          onProposalTextChange={setProposalText}
+          onSubmitProposal={handleSubmitProposal}
+          creating={creatingProposal}
+          error={proposalError}
+          proposals={proposals}
+          loadingProposals={loadingProposals}
         />
 
         <RfpList

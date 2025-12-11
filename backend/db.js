@@ -40,5 +40,20 @@ db.exec(`
     PRIMARY KEY (rfpId, vendorId)
   );
 `);
+// Proposals table: vendor responses for an RFP
+db.exec(`
+  CREATE TABLE IF NOT EXISTS proposals (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    rfpId INTEGER NOT NULL,
+    vendorName TEXT,
+    vendorEmail TEXT,
+    rawText TEXT NOT NULL,
+    parsedJson TEXT,
+    amount INTEGER,
+    currency TEXT,
+    createdAt TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+`);
+
 
 module.exports = db;
