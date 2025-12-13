@@ -166,3 +166,100 @@
     margin-bottom: 0.25rem;
     color: var(--color-heading);
 }
+
+/* =========================
+   Recommendation (Phase 5)
+   Theme-aware (light + dark)
+   ========================= */
+
+.info-box {
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 14px;
+
+  /* use your theme variables */
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+
+  color: var(--color-text);
+}
+
+.info-box strong {
+  color: var(--color-heading);
+}
+
+.info-box p {
+  margin: 8px 0 0;
+  color: var(--color-text);
+  line-height: 1.5;
+}
+
+/* Dark theme enhancement (optional glass look) */
+.theme-dark .info-box {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+/* =========================
+   Comparison table (Phase 5)
+   Theme-aware
+   ========================= */
+
+.comparison-table {
+  width: 100%;
+  margin-top: 14px;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 12px;
+  overflow: hidden;
+
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.comparison-table thead th {
+  text-align: left;
+  padding: 12px 12px;
+  font-size: 13px;
+  letter-spacing: 0.2px;
+
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--color-text);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.theme-dark .comparison-table thead th {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.comparison-table tbody td {
+  padding: 12px 12px;
+  vertical-align: top;
+  color: var(--color-text);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.comparison-table tbody tr:hover td {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.theme-dark .comparison-table tbody tr:hover td {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.comparison-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* highlight recommended row */
+.comparison-table tbody tr.is-recommended td {
+  background: rgba(59, 130, 246, 0.14);
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.theme-dark .comparison-table tbody tr.is-recommended td {
+  background: rgba(59, 130, 246, 0.18);
+}

@@ -17,15 +17,19 @@ function VendorProposalsSection({
   error,
   proposals,
   loadingProposals,
+  evaluation,
+  onEvaluate,
+  evalLoading,
+  evalError,
 }) {
   const handleSelectRfp = (e) => {
     const value = e.target.value;
-    onSelectedRfpChange(value ? Number(value) : '');
+    onSelectedRfpChange(value ? Number(value) : "");
   };
 
   const handleSelectVendor = (e) => {
     const value = e.target.value;
-    onSelectedVendorChange(value ? Number(value) : '');
+    onSelectedVendorChange(value ? Number(value) : "");
   };
 
   return (
@@ -49,7 +53,7 @@ function VendorProposalsSection({
         ) : (
           <select
             className="input"
-            value={selectedRfpId || ''}
+            value={selectedRfpId || ""}
             onChange={handleSelectRfp}
           >
             <option value="">Choose an RFP...</option>
@@ -76,14 +80,13 @@ function VendorProposalsSection({
             ) : (
               <select
                 className="input"
-                value={selectedVendorId || ''}
+                value={selectedVendorId || ""}
                 onChange={handleSelectVendor}
               >
                 <option value="">Choose a vendor or type manually...</option>
                 {vendorsForRfp.map((v) => (
                   <option key={v.id} value={v.id}>
-                    {v.name}{' '}
-                    {v.email ? `(${v.email})` : ''}
+                    {v.name} {v.email ? `(${v.email})` : ""}
                   </option>
                 ))}
               </select>
@@ -131,19 +134,17 @@ function VendorProposalsSection({
               className="btn btn-primary"
               disabled={creating}
             >
-              {creating ? 'Saving & parsing...' : 'Save & Parse Proposal'}
+              {creating ? "Saving & parsing..." : "Save & Parse Proposal"}
             </button>
           </form>
         </>
       )}
 
       {/* Proposals list */}
-      <div className="rfp-list" style={{ marginTop: '1rem' }}>
+      <div className="rfp-list" style={{ marginTop: "1rem" }}>
         {selectedRfpId && (
           <>
-            <h3 className="section-subheading">
-              Proposals for selected RFP
-            </h3>
+            <h3 className="section-subheading">Proposals for selected RFP</h3>
             {loadingProposals ? (
               <div>Loading proposals...</div>
             ) : proposals.length === 0 ? (
@@ -157,18 +158,18 @@ function VendorProposalsSection({
                   <div className="rfp-card-header">
                     <div>
                       <h3 className="rfp-card-title">
-                        {p.vendorName || 'Unknown vendor'}
+                        {p.vendorName || "Unknown vendor"}
                       </h3>
                       <p className="rfp-card-description">
-                        {p.vendorEmail || 'No email specified'}
+                        {p.vendorEmail || "No email specified"}
                       </p>
                     </div>
                     <div className="rfp-card-meta">
                       <div>
-                        <strong>Amount:</strong>{' '}
+                        <strong>Amount:</strong>{" "}
                         {p.amount != null
-                          ? `${p.currency || ''} ${p.amount}`
-                          : 'Not detected'}
+                          ? `${p.currency || ""} ${p.amount}`
+                          : "Not detected"}
                       </div>
                       {p.parsed && p.parsed.timeline && (
                         <div className="rfp-card-meta-muted">
@@ -176,14 +177,14 @@ function VendorProposalsSection({
                         </div>
                       )}
                       <div className="rfp-card-meta-muted">
-                        Received:{' '}
+                        Received:{" "}
                         {new Date(p.createdAt).toLocaleString(undefined, {
-                          day: '2-digit',
-                          month: '2-digit',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                          second: '2-digit',
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          second: "2-digit",
                         })}
                       </div>
                     </div>
@@ -201,7 +202,7 @@ function VendorProposalsSection({
                       <strong>Raw excerpt:</strong>
                       <p>
                         {p.rawText.length > 200
-                          ? p.rawText.slice(0, 200) + '...'
+                          ? p.rawText.slice(0, 200) + "..."
                           : p.rawText}
                       </p>
                     </div>
@@ -212,6 +213,63 @@ function VendorProposalsSection({
           </>
         )}
       </div>
+      {/* ================= PHASE 5 ================= */}
+
+      {selectedRfpId && proposals.length > 0 && (
+        <div style={{ marginTop: "1.5rem" }}>
+          {evalError && <div className="error-box">{evalError}</div>}
+
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={onEvaluate}
+            disabled={evalLoading}
+          >
+            {evalLoading ? "Evaluating..." : "Compare & Recommend"}
+          </button>
+        </div>
+      )}
+
+      {evaluation && evaluation.recommendation && (
+        <div className="info-box" style={{ marginTop: "1rem" }}>
+          <strong>Recommended Vendor:</strong>{" "}
+          {evaluation.recommendation.vendorName}
+          <p style={{ marginTop: "0.5rem" }}>
+            {evaluation.recommendation.reason}
+          </p>
+          <table className="comparison-table">
+            <thead>
+              <tr>
+                <th>Vendor</th>
+                <th>Amount</th>
+                <th>Timeline</th>
+                <th>Summary</th>
+              </tr>
+            </thead>
+            <tbody>
+              {evaluation.proposals.map((p) => (
+                <tr
+                  key={p.id}
+                  className={
+                    evaluation.recommendation.vendorId === p.id
+                      ? "is-recommended"
+                      : ""
+                  }
+                >
+                  <td>{p.vendorName}</td>
+                  <td>
+                    {p.amount != null
+                      ? `${p.currency || ""} ${p.amount}`
+                      : "N/A"}
+                  </td>
+                  <td>{p.timeline || "N/A"}</td>
+                  <td>{p.summary ? p.summary.slice(0, 100) + "..." : "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </section>
   );
 }

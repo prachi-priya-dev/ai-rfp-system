@@ -5,6 +5,7 @@ const { linkVendorsToRfp, getVendorsForRfp } = require('../vendorStore');
 const { sendRfpEmails } = require('../emailService');
 const { createProposal, getProposalsForRfp } = require('../proposalStore');
 const { parseProposalText } = require('../proposalParser');
+const { evaluateProposalsForRfp } = require('../proposalEvaluator');
 
 
 const router = express.Router();
@@ -208,6 +209,32 @@ router.get('/rfps/:id/proposals', (req, res) => {
     });
   }
 });
+
+// GET /api/rfps/:id/proposals/evaluate
+router.get('/rfps/:id/proposals/evaluate', (req, res) => {
+  const rfpId = Number(req.params.id);
+
+  if (!rfpId) {
+    return res.status(400).json({ error: 'Invalid RFP id' });
+  }
+
+  try {
+    const result = evaluateProposalsForRfp(rfpId);
+
+    if (!result.proposals.length) {
+      return res.status(404).json({ error: 'No proposals found for this RFP' });
+    }
+
+    res.json(result);
+  } catch (err) {
+    console.error('Evaluate proposals error:', err);
+    res.status(500).json({
+      error: 'Failed to evaluate proposals',
+      details: err.message,
+    });
+  }
+});
+
 
 
 
