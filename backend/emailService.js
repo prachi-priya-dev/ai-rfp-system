@@ -19,7 +19,9 @@ const transporter = nodemailer.createTransport({
     pass: MAILTRAP_PASS,
   },
 });
-
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 /**
  * Send RFP email to a list of vendors.
  * @param {object} rfp - RFP row from DB
@@ -27,7 +29,7 @@ const transporter = nodemailer.createTransport({
  */
 async function sendRfpEmails(rfp, vendors) {
   if (!rfp || !Array.isArray(vendors) || vendors.length === 0) {
-    return { sent: 0 };
+    return { sent: 0, results: [] };
   }
 
   const from = MAIL_FROM || 'RFP System <no-reply@example.com>';
@@ -51,17 +53,28 @@ Please reply to this email with your proposal, pricing, and terms.
   `.trim();
 
   const results = [];
+  let sent = 0;
 
   for (const vendor of vendors) {
+    // ✅ vendor email validation (prevents crash)
+    if (!vendor.email || !vendor.email.includes('@')) {
+      results.push({
+        vendorId: vendor.id,
+        ok: false,
+        error: 'Missing/invalid vendor email',
+      });
+      continue;
+    }
+
     const mailOptions = {
       from,
       to: vendor.email,
       subject: `RFP Invitation: ${rfp.title}`,
-      text: baseText + `
+      text:
+        baseText +
+        `
 
-Vendor: ${vendor.name}${
-        vendor.company ? ' (' + vendor.company + ')' : ''
-      }
+Vendor: ${vendor.name}${vendor.company ? ' (' + vendor.company + ')' : ''}
 `,
       html: `
         <p>You are invited to submit a proposal for the following RFP:</p>
@@ -72,22 +85,36 @@ Vendor: ${vendor.name}${
             ? `${rfp.budgetCurrency || ''} ${rfp.budget}`
             : 'Not specified'
         }</p>
-        <p><strong>Deadline:</strong> ${
-          rfp.deadline || 'Not specified'
-        }</p>
+        <p><strong>Deadline:</strong> ${rfp.deadline || 'Not specified'}</p>
         <p>Please reply to this email with your proposal, pricing, and terms.</p>
         <hr />
         <p>Vendor: ${vendor.name}${
-        vendor.company ? ' (' + vendor.company + ')' : ''
-      }</p>
+          vendor.company ? ' (' + vendor.company + ')' : ''
+        }</p>
       `,
     };
 
-    const info = await transporter.sendMail(mailOptions);
-    results.push({ vendorId: vendor.id, messageId: info.messageId });
+    try {
+      const info = await transporter.sendMail(mailOptions);
+      sent++;
+      results.push({
+        vendorId: vendor.id,
+        ok: true,
+        messageId: info.messageId,
+        to: vendor.email,
+      });
+    } catch (err) {
+      results.push({
+        vendorId: vendor.id,
+        ok: false,
+        error: err.message,
+        to: vendor.email,
+      });
+    }
+    await sleep(20000);
   }
 
-  return { sent: results.length, results };
+  return { sent, results };
 }
 
 module.exports = {
