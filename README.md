@@ -51,8 +51,8 @@ A full-stack web application to **create, manage, and AI-parse RFPs (**Request**
 - **📊 Compare & Recommend (Phase 5)**
   - View all proposals for an RFP in a comparison table
   - Mock AI evaluation logic:
-     - `Reads parsed proposal data`
-     - `Compares price and timeline`
+    - `Reads parsed proposal data`
+    - `Compares price and timeline`
 
   - Returns:
     - `Recommended vendor`
@@ -70,10 +70,11 @@ ai-rfp-system/
 ├── backend/
 │   ├── index.js                # Express app entry
 │   ├── db.js                   # SQLite connection
-│   ├── emailService.js         # Mailtrap + Nodemailer
 │   ├── services/
 │   │   ├── aiParser.js         # Mock AI for RFP & proposals
-│   │   ├── evaluationService.js# Vendor comparison logic
+│   │   ├── emailService.js     # Mailtrap + Nodemailer
+│   │   ├── proposalEvaluator.js
+│   │   ├── proposalParser.js
 │   ├── stores/
 │   │   ├── rfpStore.js
 │   │   ├── vendorStore.js
@@ -81,26 +82,36 @@ ai-rfp-system/
 │   ├── routes/
 │   │   ├── rfpRoutes.js
 │   │   ├── vendorRoutes.js
-│   │   ├── proposalRoutes.js
 │
 ├── frontend/
 │   ├── src/
 │   │   ├── App.jsx
 │   │   ├── main.jsx
 │   │   ├── components/
-│   │   │   ├── Header.jsx
-│   │   │   ├── BackendHealth.jsx
-│   │   │   ├── AiAssistSection.jsx
-│   │   │   ├── RfpForm.jsx
-│   │   │   ├── VendorManagement.jsx
-│   │   │   ├── VendorProposalsSection.jsx
-│   │   │   ├── RecommendationPanel.jsx
+│   │   │   ├── header.jsx
+│   │   │   ├── backendHealth.jsx
+│   │   │   ├── aiAssistSection.jsx
+│   │   │   ├── rfpForm.jsx
+│   │   │   ├── vendorSection.jsx
+│   │   │   ├── vendorProposalsSection.jsx
+│   │   │   ├── rfpList.jsx
+│   │   ├── hooks/
+│   │   │   ├── useAiAssist.jsx
+│   │   │   ├── useHealth.jsx
+│   │   │   ├── useProposal.jsx
+│   │   │   ├── useRfp.jsx
+│   │   │   ├── useTheme.jsx
+│   │   │   ├── useVendor.jsx
+│   │   ├── api/
+│   │   │   ├── client.js
 │   │   ├── styles/
 │   │   │   ├── variables.css
 │   │   │   ├── layout.css
 │   │   │   ├── buttons.css
 │   │   │   ├── form.css
 │   │   │   ├── sections.css
+│   │   ├── App.css
+│   │   ├── index.css
 │
 └── screenshots/
     ├── home.png
