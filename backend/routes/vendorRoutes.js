@@ -6,7 +6,7 @@ const {
   getVendorsForRfp,
   setVendorsForRfp,
   updateVendor,   // 👈 NEW
-} = require('../vendorStore');
+} = require('../stores/vendorStore');
 
 const router = express.Router();
 

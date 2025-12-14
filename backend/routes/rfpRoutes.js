@@ -1,11 +1,11 @@
 const express = require('express');
-const { createRfp, getAllRfps, getRfpById } = require('../rfpStore');
-const { parseRfpWithAI } = require('../aiParser');
-const { linkVendorsToRfp, getVendorsForRfp } = require('../vendorStore');
-const { sendRfpEmails } = require('../emailService');
-const { createProposal, getProposalsForRfp } = require('../proposalStore');
-const { parseProposalText } = require('../proposalParser');
-const { evaluateProposalsForRfp } = require('../proposalEvaluator');
+const { createRfp, getAllRfps, getRfpById } = require('../stores/rfpStore');
+const { parseRfpWithAI } = require('../services/aiParser');
+const { linkVendorsToRfp, getVendorsForRfp } = require('../stores/vendorStore');
+const { sendRfpEmails } = require('../services/emailService');
+const { createProposal, getProposalsForRfp } = require('../stores/proposalStore');
+const { parseProposalText } = require('../services/proposalParser');
+const { evaluateProposalsForRfp } = require('../services/proposalEvaluator');
 
 
 const router = express.Router();

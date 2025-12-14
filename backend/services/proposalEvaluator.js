@@ -1,5 +1,5 @@
 // backend/proposalEvaluator.js
-const { getProposalsForRfp } = require('./proposalStore');
+const { getProposalsForRfp } = require('../stores/proposalStore');
 
 /**
  * Convert timeline string like "6 weeks", "3 months", "10 days" -> weeks (approx)

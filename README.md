@@ -31,6 +31,33 @@ A full-stack web application to **create, manage, and AI-parse RFPs (**Request**
     - `deliverables[]`
   - One click to **fill the Create RFP form** from AI output.
 - 🩺 **Backend Health Check** section in UI.
+- **🧑‍💼 Vendor Management**
+  - Add vendors with name, email, company, and notes
+  - Edit vendor details later if required
+  - Link vendors to specific RFPs
+- **📧 Send RFPs to Vendors**
+  - Send RFP invitations via email using Mailtrap (dev-safe SMTP)
+  - One click sends emails to all vendors linked to the RFP
+  - Handles per-vendor success/failure safely
+- **📬 Vendor Proposals (Simulated)**
+  - Paste vendor email responses directly into the UI
+  - Store proposals per RFP
+  - Mock AI parses proposal text to extract:
+    - `Pricing`
+    - `Currency`
+    - `Timeline`
+    - `Summary`
+💡 IMAP inbox integration was intentionally skipped to keep the system clean and deterministic for demo purposes.
+- **📊 Compare & Recommend (Phase 5)**
+  - View all proposals for an RFP in a comparison table
+  - Mock AI evaluation logic:
+     - `Reads parsed proposal data`
+     - `Compares price and timeline`
+
+  - Returns:
+    - `Recommended vendor`
+    - `Clear explanation of the decision`
+- Fully client-visible and explainable (no black box)
 
 > ✅ Uses **mock AI** on backend – works completely offline, no OpenAI account or billing required.
 
@@ -40,29 +67,47 @@ A full-stack web application to **create, manage, and AI-parse RFPs (**Request**
 
 ```text
 ai-rfp-system/
-  backend/
-    index.js          # Express app entry point
-    rfpStore.js       # In-memory RFP storage + helpers
-    aiParser.js       # Mock AI parser (no external API)
-    routes/
-      rfpRoutes.js    # All /api/rfps* routes
-  frontend/
-    src/
-      App.jsx         # Main React app
-      main.jsx        # React entry
-      index.css       # Global base styles
-      components/
-        Header.jsx
-        BackendHealth.jsx
-        AiAssistSection.jsx
-        RfpForm.jsx
-        RfpList.jsx
-      styles/
-        variables.css  # CSS variables (colors, fonts, etc.)
-        layout.css     # Layout styles (app container, card)
-        buttons.css    # Button styles
-        form.css       # Form + input styles
-        sections.css   # Sections, cards, list styles
+├── backend/
+│   ├── index.js                # Express app entry
+│   ├── db.js                   # SQLite connection
+│   ├── emailService.js         # Mailtrap + Nodemailer
+│   ├── services/
+│   │   ├── aiParser.js         # Mock AI for RFP & proposals
+│   │   ├── evaluationService.js# Vendor comparison logic
+│   ├── stores/
+│   │   ├── rfpStore.js
+│   │   ├── vendorStore.js
+│   │   ├── proposalStore.js
+│   ├── routes/
+│   │   ├── rfpRoutes.js
+│   │   ├── vendorRoutes.js
+│   │   ├── proposalRoutes.js
+│
+├── frontend/
+│   ├── src/
+│   │   ├── App.jsx
+│   │   ├── main.jsx
+│   │   ├── components/
+│   │   │   ├── Header.jsx
+│   │   │   ├── BackendHealth.jsx
+│   │   │   ├── AiAssistSection.jsx
+│   │   │   ├── RfpForm.jsx
+│   │   │   ├── VendorManagement.jsx
+│   │   │   ├── VendorProposalsSection.jsx
+│   │   │   ├── RecommendationPanel.jsx
+│   │   ├── styles/
+│   │   │   ├── variables.css
+│   │   │   ├── layout.css
+│   │   │   ├── buttons.css
+│   │   │   ├── form.css
+│   │   │   ├── sections.css
+│
+└── screenshots/
+    ├── home.png
+    ├── ai-assist.png
+    ├── create-rfp.png
+    ├── vendor-proposals.png
+    ├── comparison.png
 ```
 ---
 
@@ -120,6 +165,38 @@ GET /api/health
   "message": "Backend is running"
 }
 ```
+
+### 📄 RFPs
+
+**GET /rfps**
+
+**POST /rfps**
+
+**GET /rfps/:id**
+
+**POST /rfps/parse**
+
+**POST /rfps/:id/send**
+
+### 🧑‍💼 Vendors
+
+**GET /vendors**
+
+**POST /vendors**
+
+**PUT /vendors/:id**
+
+### 📬 Proposals
+
+**GET /rfps/:id/proposals**
+
+**POST /rfps/:id/proposals**
+
+### 📊 Evaluation
+
+**POST /rfps/:id/evaluate**
+
+Returns recommended vendor + explanation.
 
 ### 📂 GET /api/rfps
 
@@ -247,3 +324,12 @@ Content-Type: application/json
 
 ### 📂 RFP List
 ![RFP List](/screenshots/rfp-list.png)
+
+### 🗄️ Vendor Management
+![Vendor Management](/screenshots/vendor-management.png)
+
+### 📬 Vendor Proposals
+![Vendor Proposal](/screenshots/vendor-proposal.png)
+
+### 📊 Comparison & Recommendation
+![Evalution](/screenshots/evalutation.png)

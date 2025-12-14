@@ -1,5 +1,5 @@
 // backend/rfpStore.js
-const db = require('./db');
+const db = require('../db');
 
 // Create a new RFP and return the created row
 function createRfp({ title, description, budget, budgetCurrency, deadline }) {

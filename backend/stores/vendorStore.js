@@ -1,5 +1,5 @@
 // backend/vendorStore.js
-const db = require('./db');
+const db = require('../db');
 
 function createVendor({ name, email, company, notes }) {
   const stmt = db.prepare(`
