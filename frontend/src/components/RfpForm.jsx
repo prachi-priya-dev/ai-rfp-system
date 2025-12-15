@@ -15,6 +15,8 @@ function RfpForm({
   onDeadlineChange,
   onToggleVendor,
   onSubmit,
+  mode,
+  onCancelEdit,
 }) {
   return (
     <section className="section">
@@ -110,8 +112,25 @@ function RfpForm({
         )}
 
         <button type="submit" className="btn btn-primary" disabled={creating}>
-          {creating ? 'Creating...' : 'Create RFP'}
+          {creating
+            ? mode === "edit"
+              ? "Updating..."
+              : "Creating..."
+            : mode === "edit"
+            ? "Update RFP"
+            : "Create RFP"}
         </button>
+
+        {mode === "edit" && (
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={onCancelEdit}
+            style={{ marginLeft: "0.75rem" }}
+          >
+            Cancel
+          </button>
+        )}
       </form>
     </section>
   );

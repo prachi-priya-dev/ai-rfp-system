@@ -50,8 +50,37 @@ function getRfpById(id) {
   return row || null;
 }
 
+function deleteRfp(id) {
+  const tx = db.transaction(() => {
+    db.prepare('DELETE FROM rfp_vendors WHERE rfpId = ?').run(id);
+    db.prepare('DELETE FROM proposals WHERE rfpId = ?').run(id);
+    db.prepare('DELETE FROM rfps WHERE id = ?').run(id);
+  });
+
+  tx();
+}
+
+function updateRfp(id, { title, description, budget, budgetCurrency, deadline }) {
+  db.prepare(`
+    UPDATE rfps
+    SET title = ?, description = ?, budget = ?, budgetCurrency = ?, deadline = ?
+    WHERE id = ?
+  `).run(
+    title,
+    description,
+    budget ?? null,
+    budgetCurrency ?? null,
+    deadline ?? null,
+    id
+  );
+
+  return getRfpById(id);
+}
+
 module.exports = {
   createRfp,
   getAllRfps,
   getRfpById,
+  deleteRfp,
+  updateRfp,
 };

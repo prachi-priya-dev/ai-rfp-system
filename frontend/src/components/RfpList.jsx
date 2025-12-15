@@ -1,35 +1,41 @@
+// frontend/src/components/RfpList.jsx
+
 function formatBudget(budget, currency) {
-  if (budget == null) return '—';
+  if (budget == null) return "—";
 
   const symbolMap = {
-    INR: '₹',
-    USD: '$',
-    EUR: '€',
-    GBP: '£',
-    JPY: '¥',
-    CAD: 'C$',
-    AUD: 'A$',
+    INR: "₹",
+    USD: "$",
+    EUR: "€",
+    GBP: "£",
+    JPY: "¥",
+    CAD: "C$",
+    AUD: "A$",
   };
 
-  const symbol = symbolMap[currency] || '';
-  const formattedNumber = Number(budget).toLocaleString('en-IN');
+  const symbol = symbolMap[currency] || "";
+  const formattedNumber = Number(budget).toLocaleString("en-IN");
 
-  if (symbol && currency) {
-    return `${symbol}${formattedNumber} ${currency}`;
-  }
-  if (currency) {
-    return `${formattedNumber} ${currency}`;
-  }
+  if (symbol && currency) return `${symbol}${formattedNumber} ${currency}`;
+  if (currency) return `${formattedNumber} ${currency}`;
   return formattedNumber;
 }
 
 function formatDateTime(isoString) {
-  if (!isoString) return '—';
+  if (!isoString) return "—";
   const d = new Date(isoString);
-  return d.toLocaleString('en-GB'); // DD/MM/YYYY, HH:MM:SS
+  return d.toLocaleString("en-GB"); // DD/MM/YYYY, HH:MM:SS
 }
 
-function RfpList({ rfps, loading, searchTerm, onSearchChange, onSendRfp }) {
+function RfpList({
+  rfps,
+  loading,
+  searchTerm,
+  onSearchChange,
+  onSendRfp,
+  onEditRfp,
+  onDeleteRfp,
+}) {
   return (
     <section className="section">
       <h2 className="section-heading">Existing RFPs</h2>
@@ -51,7 +57,9 @@ function RfpList({ rfps, loading, searchTerm, onSearchChange, onSendRfp }) {
       {loading ? (
         <div>Loading RFPs...</div>
       ) : rfps.length === 0 ? (
-        <div className="rfp-list-empty">No RFPs yet. Create your first one above.</div>
+        <div className="rfp-list-empty">
+          No RFPs yet. Create your first one above.
+        </div>
       ) : (
         <div className="rfp-list">
           {rfps.map((rfp) => (
@@ -61,40 +69,68 @@ function RfpList({ rfps, loading, searchTerm, onSearchChange, onSendRfp }) {
                   <h3 className="rfp-card-title">{rfp.title}</h3>
                   <p className="rfp-card-description">{rfp.description}</p>
                 </div>
+
                 <div className="rfp-card-meta">
                   {rfp.budget != null && (
                     <div>
-                      <strong>Budget:</strong>{' '}
+                      <strong>Budget:</strong>{" "}
                       {formatBudget(rfp.budget, rfp.budgetCurrency)}
                     </div>
                   )}
+
                   {rfp.deadline && (
                     <div>
                       <strong>Deadline:</strong> {rfp.deadline}
                     </div>
                   )}
+
                   <div className="rfp-card-meta-muted">
                     Created: {formatDateTime(rfp.createdAt)}
                   </div>
-                  {rfp.vendorCount > 0 && (
-    <div className="rfp-card-meta-muted">
-      <strong>Vendors:</strong>{' '}
-      {rfp.vendorNames || `${rfp.vendorCount} selected`}
-    </div>
-  )}
-          <div className="rfp-card-footer">
-          <button
-            type="button"
-            className="btn btn-tertiary"
-            onClick={() => onSendRfp(rfp.id)}
-            disabled={rfp.vendorCount === 0}
-          >
-            {rfp.vendorCount === 0
-              ? 'No vendors linked'
-              : `Send to ${rfp.vendorCount} vendor(s)`}
-          </button>
-        </div>
 
+                  {rfp.vendorCount > 0 && (
+                    <div className="rfp-card-meta-muted">
+                      <strong>Vendors:</strong>{" "}
+                      {rfp.vendorNames || `${rfp.vendorCount} selected`}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Footer actions */}
+              <div className="rfp-card-footer">
+                <button
+                  type="button"
+                  className="btn btn-tertiary"
+                  onClick={() => onSendRfp(rfp.id)}
+                  disabled={rfp.vendorCount === 0}
+                >
+                  {rfp.vendorCount === 0
+                    ? "No vendors linked"
+                    : `Send to ${rfp.vendorCount} vendor(s)`}
+                </button>
+
+                <div className="rfp-card-actions">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => onEditRfp(rfp)}
+                  >
+                    Edit
+                  </button>
+
+                  <button
+                    type="button"
+                    className="btn btn-danger"
+                    onClick={() => {
+                      const ok = window.confirm(
+                        `Delete "${rfp.title}"?\n\nThis will also remove linked vendors + proposals for this RFP.`
+                      );
+                      if (ok) onDeleteRfp(rfp.id);
+                    }}
+                  >
+                    Delete
+                  </button>
                 </div>
               </div>
             </article>

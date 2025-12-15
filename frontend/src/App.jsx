@@ -1,3 +1,4 @@
+// frontend/src/App.jsx
 import Header from "./components/Header";
 import { useState } from "react";
 import BackendHealth from "./components/BackendHealth";
@@ -9,10 +10,12 @@ import VendorProposalsSection from "./components/VendorProposalsSection";
 
 import { useTheme } from "./hooks/useTheme";
 import { useHealth } from "./hooks/useHealth";
-import { useVendors } from "./hooks/useVendors";
-import { useRfps } from "./hooks/useRfps";
+import { useVendors } from "./hooks/useVendor";
+import { useRfps } from "./hooks/useRfp";
 import { useAiAssist } from "./hooks/useAiAssist";
-import { useProposals } from "./hooks/useProposals";
+import { useProposals } from "./hooks/useProposal";
+
+const BACKEND_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 function App() {
   // Theme
@@ -43,6 +46,7 @@ function App() {
     setSearchTerm,
     createRfp,
     sendRfp,
+    fetchRfps, // ⚠️ make sure your hook exports this (if not, tell me)
   } = useRfps();
 
   // AI Assist
@@ -73,8 +77,7 @@ function App() {
     evaluate,
   } = useProposals();
 
-  // RFP form state (stays in App because it's UI form-specific)
-  // (If you want, we can move this to its own hook later too)
+  // Form state
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [budget, setBudget] = useState("");
@@ -82,7 +85,10 @@ function App() {
   const [deadline, setDeadline] = useState("");
   const [selectedVendorIds, setSelectedVendorIds] = useState([]);
 
-  // Apply AI result into Create RFP form
+  // NEW: edit mode
+  const [editingRfpId, setEditingRfpId] = useState(null);
+
+  // Apply AI result into Create/Edit form
   const applyAiResultToForm = () => {
     if (!aiResult) return;
 
@@ -100,7 +106,9 @@ function App() {
           ? "\n\nDeliverables:\n- " + aiResult.deliverables.join("\n- ")
           : "";
 
-      setDescription(`${aiResult.summary}${requirementsText}${deliverablesText}`);
+      setDescription(
+        `${aiResult.summary}${requirementsText}${deliverablesText}`
+      );
     }
 
     if (aiResult.budget_amount != null) setBudget(String(aiResult.budget_amount));
@@ -116,7 +124,42 @@ function App() {
     );
   };
 
-  const handleCreateRfp = async (e) => {
+  // ✅ Edit button handler (prefill form)
+  const handleEditRfp = async (rfp) => {
+    setEditingRfpId(rfp.id);
+
+    setTitle(rfp.title || "");
+    setDescription(rfp.description || "");
+    setBudget(rfp.budget != null ? String(rfp.budget) : "");
+    setBudgetCurrency(rfp.budgetCurrency || "INR");
+    setDeadline(rfp.deadline || "");
+
+    // load vendor links for this rfp so checkboxes get selected
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/rfps/${rfp.id}/vendors`);
+      const data = await res.json();
+      setSelectedVendorIds(Array.isArray(data) ? data.map((v) => v.id) : []);
+    } catch {
+      setSelectedVendorIds([]);
+    }
+
+    // optional: scroll to top where form is
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingRfpId(null);
+    setTitle("");
+    setDescription("");
+    setBudget("");
+    setBudgetCurrency("INR");
+    setDeadline("");
+    setSelectedVendorIds([]);
+    setRfpError("");
+  };
+
+  // ✅ Create OR Update (single submit)
+  const handleCreateOrUpdateRfp = async (e) => {
     e.preventDefault();
     setRfpError("");
 
@@ -125,15 +168,39 @@ function App() {
       return;
     }
 
+    const payload = {
+      title,
+      description,
+      budget: budget ? Number(budget) : null,
+      deadline: deadline || null,
+      budgetCurrency: budgetCurrency || null,
+    };
+
     try {
+      // UPDATE mode
+      if (editingRfpId) {
+        const res = await fetch(`${BACKEND_URL}/api/rfps/${editingRfpId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...payload,
+            vendorIds: selectedVendorIds,
+          }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Failed to update RFP");
+
+        // refresh list
+        if (fetchRfps) await fetchRfps();
+
+        handleCancelEdit();
+        return;
+      }
+
+      // CREATE mode
       await createRfp({
-        payload: {
-          title,
-          description,
-          budget: budget ? Number(budget) : null,
-          deadline: deadline || null,
-          budgetCurrency: budgetCurrency || null,
-        },
+        payload,
         vendorIds: selectedVendorIds,
       });
 
@@ -144,8 +211,8 @@ function App() {
       setBudgetCurrency("INR");
       setDeadline("");
       setSelectedVendorIds([]);
-    } catch {
-      // error already set in hook
+    } catch (err) {
+      setRfpError(err.message || "Something went wrong");
     }
   };
 
@@ -156,6 +223,26 @@ function App() {
     } catch (error) {
       console.error(error);
       alert(error.message || "Failed to send RFP emails");
+    }
+  };
+
+  // ✅ Delete RFP
+  const handleDeleteRfp = async (rfpId) => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/rfps/${rfpId}`, {
+        method: "DELETE",
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to delete RFP");
+
+      // refresh list
+      if (fetchRfps) await fetchRfps();
+
+      // if user was editing the same rfp, cancel edit
+      if (editingRfpId === rfpId) handleCancelEdit();
+    } catch (err) {
+      alert(err.message || "Failed to delete RFP");
     }
   };
 
@@ -186,6 +273,8 @@ function App() {
         />
 
         <RfpForm
+          mode={editingRfpId ? "edit" : "create"}
+          onCancelEdit={handleCancelEdit}
           title={title}
           description={description}
           budget={budget}
@@ -201,7 +290,7 @@ function App() {
           onBudgetCurrencyChange={setBudgetCurrency}
           onDeadlineChange={setDeadline}
           onToggleVendor={handleToggleVendor}
-          onSubmit={handleCreateRfp}
+          onSubmit={handleCreateOrUpdateRfp}
         />
 
         <VendorProposalsSection
@@ -234,6 +323,8 @@ function App() {
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
           onSendRfp={handleSendRfp}
+          onEditRfp={handleEditRfp}
+          onDeleteRfp={handleDeleteRfp}
         />
       </div>
     </div>

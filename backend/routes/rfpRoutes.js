@@ -1,7 +1,11 @@
 const express = require('express');
-const { createRfp, getAllRfps, getRfpById } = require('../stores/rfpStore');
+const { createRfp,
+  getAllRfps,
+  getRfpById,
+  updateRfp,
+  deleteRfp, } = require('../stores/rfpStore');
 const { parseRfpWithAI } = require('../services/aiParser');
-const { linkVendorsToRfp, getVendorsForRfp } = require('../stores/vendorStore');
+const { setVendorsForRfp, getVendorsForRfp } = require('../stores/vendorStore');
 const { sendRfpEmails } = require('../services/emailService');
 const { createProposal, getProposalsForRfp } = require('../stores/proposalStore');
 const { parseProposalText } = require('../services/proposalParser');
@@ -136,7 +140,7 @@ router.post('/rfps/:id/vendors', (req, res) => {
   }
 
   try {
-    linkVendorsToRfp(rfpId, vendorIds);
+    setVendorsForRfp(rfpId, vendorIds);
     res.json({ ok: true });
   } catch (err) {
     console.error('Link vendors to RFP error:', err);
@@ -146,6 +150,20 @@ router.post('/rfps/:id/vendors', (req, res) => {
     });
   }
 });
+
+router.get('/rfps/:id/vendors', (req, res) => {
+  const rfpId = Number(req.params.id);
+  if (!rfpId) return res.status(400).json({ error: 'Invalid RFP id' });
+
+  try {
+    const vendors = getVendorsForRfp(rfpId);
+    res.json(vendors);
+  } catch (err) {
+    console.error("Get vendors for RFP error:", err);
+    res.status(500).json({ error: 'Failed to load vendors for RFP' });
+  }
+});
+
 
 // POST /api/rfps/:id/proposals
 // Body: { vendorName, vendorEmail, text }
@@ -235,7 +253,56 @@ router.get('/rfps/:id/proposals/evaluate', (req, res) => {
   }
 });
 
+// DELETE /api/rfps/:id
+router.delete('/rfps/:id', (req, res) => {
+  const rfpId = Number(req.params.id);
 
+  if (!rfpId) {
+    return res.status(400).json({ error: 'Invalid RFP id' });
+  }
 
+  const rfp = getRfpById(rfpId);
+  if (!rfp) {
+    return res.status(404).json({ error: 'RFP not found' });
+  }
+
+  try {
+    deleteRfp(rfpId);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('Delete RFP error:', err);
+    res.status(500).json({ error: 'Failed to delete RFP' });
+  }
+});
+
+// PUT /api/rfps/:id
+router.put('/rfps/:id', (req, res) => {
+  const rfpId = Number(req.params.id);
+  const { title, description, budget, budgetCurrency, deadline, vendorIds } = req.body;
+
+  if (!rfpId || !title || !description) {
+    return res.status(400).json({ error: 'Invalid input' });
+  }
+
+  try {
+    const updated = updateRfp(rfpId, {
+      title,
+      description,
+      budget,
+      budgetCurrency,
+      deadline,
+    });
+
+    // update vendor links if provided
+    if (Array.isArray(vendorIds)) {
+      setVendorsForRfp(rfpId, vendorIds);
+    }
+
+    res.json(updated);
+  } catch (err) {
+    console.error('Update RFP error:', err);
+    res.status(500).json({ error: 'Failed to update RFP' });
+  }
+});
 
 module.exports = router;
